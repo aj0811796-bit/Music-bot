@@ -1,5 +1,4 @@
-# requirements.txt
-pyrogram==2.0.106
-pytgcalls==0.0.24
-yt-dlp==2023.12.30
-youtube-search-python==1.6.5
+telegram-bot
+pyrogram
+pytgcalls
+yt-dlp
