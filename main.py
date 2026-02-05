@@ -17,14 +17,14 @@ if not all([API_ID, API_HASH, BOT_TOKEN, SESSION_STRING]):
     logger.error("Missing env vars!")
     exit(1)
 
-# Imports for py-tgcalls
+# Imports for pytgcalls
 try:
     from pyrogram import Client, filters, idle
     from pyrogram.types import Message
     logger.info("✅ Pyrogram imported")
     
-    from py-tgcalls import PyTgCalls
-    from py-tgcalls.types import AudioPiped
+    from pytgcalls import PyTgCalls
+    from pytgcalls.types import AudioPiped
     logger.info("✅ py-tgcalls imported")
     
     from youtubesearchpython import VideosSearch
