@@ -1,216 +1,129 @@
 import os
 import asyncio
 import logging
-from pyrogram import Client, filters
-from pyrogram.types import Message
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped
-from youtubesearchpython import VideosSearch
-import yt_dlp
+from typing import Dict
+from collections import deque
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get environment variables from Railway
+# Get env vars
 API_ID = int(os.getenv("API_ID", 0))
 API_HASH = os.getenv("API_HASH", "")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+SESSION_STRING = os.getenv("SESSION_STRING", "")
 
-# Validate
-if not all([API_ID, API_HASH, BOT_TOKEN]):
-    logger.error("❌ Missing environment variables!")
-    logger.error("Set API_ID, API_HASH, BOT_TOKEN in Railway Variables")
+if not all([API_ID, API_HASH, BOT_TOKEN, SESSION_STRING]):
+    logger.error("Missing env vars!")
     exit(1)
 
-# Initialize bot
-bot = Client(
-    "music_bot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
+# Imports for py-tgcalls
+try:
+    from pyrogram import Client, filters, idle
+    from pyrogram.types import Message
+    logger.info("✅ Pyrogram imported")
+    
+    from py_tgcalls import PyTgCalls
+    from py_tgcalls.types import AudioPiped
+    logger.info("✅ py-tgcalls imported")
+    
+    from youtubesearchpython import VideosSearch
+    import yt_dlp
+    logger.info("✅ YouTube libraries imported")
+    
+except ImportError as e:
+    logger.error(f"❌ Import failed: {e}")
+    exit(1)
 
-# Initialize pytgcalls
-call = PyTgCalls(bot)
+# Initialize clients
+bot = Client("bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+user_client = Client("user", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING)
+call = PyTgCalls(user_client)
 
-# Store queues
-queues = {}
-current_playing = {}
+# Storage
+queues: Dict[int, deque] = {}
 
 # Search YouTube
-async def search_youtube(query):
+async def search_youtube(query: str):
     try:
         search = VideosSearch(query, limit=1)
         result = search.result()
         if result['result']:
             return f"https://youtube.com/watch?v={result['result'][0]['id']}"
-    except Exception as e:
-        logger.error(f"Search error: {e}")
+    except:
+        pass
     return None
 
 # Get audio URL
-async def get_audio_url(youtube_url):
+async def get_audio_url(url: str):
     try:
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'quiet': True,
-            'no_warnings': True,
-            'noplaylist': True,
-        }
+        ydl_opts = {'format': 'bestaudio/best', 'quiet': True}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(youtube_url, download=False)
-            return {
-                'title': info.get('title', 'Unknown'),
-                'url': info['url']
-            }
-    except Exception as e:
-        logger.error(f"Audio error: {e}")
-    return None
-
-# Play song
-async def play_song(chat_id, song):
-    try:
-        current_playing[chat_id] = song
-        await call.join_group_call(
-            chat_id,
-            AudioPiped(song['url'])
-        )
-        await bot.send_message(chat_id, f"🎵 **Now Playing:** {song['title']}")
-    except Exception as e:
-        logger.error(f"Play error: {e}")
-        current_playing.pop(chat_id, None)
+            info = ydl.extract_info(url, download=False)
+            return {'title': info.get('title', 'Unknown'), 'url': info['url']}
+    except:
+        return None
 
 # Bot commands
 @bot.on_message(filters.command("start"))
-async def start_command(client, message: Message):
-    await message.reply_text(
-        "🎵 **Music Bot Online!**\n\n"
-        "**Commands:**\n"
-        "/play [song] - Play music\n"
-        "/skip - Skip song\n"
-        "/stop - Stop music\n"
-        "/queue - Show queue\n\n"
-        "Made for Railway 🚄"
-    )
+async def start(client, message: Message):
+    await message.reply("🎵 Music Bot Online! Use /play song")
 
 @bot.on_message(filters.command("play"))
-async def play_command(client, message: Message):
+async def play(client, message: Message):
     if len(message.command) < 2:
-        await message.reply_text("❌ Usage: /play song_name")
+        await message.reply("Usage: /play song_name")
         return
     
     query = " ".join(message.command[1:])
     chat_id = message.chat.id
     
-    # Send searching message
-    msg = await message.reply_text("🔍 Searching...")
+    msg = await message.reply("🔍 Searching...")
     
-    # Search YouTube
     youtube_url = await search_youtube(query)
     if not youtube_url:
-        await msg.edit_text("❌ No results found!")
+        await msg.edit("❌ No results!")
         return
     
-    # Get audio stream
     song = await get_audio_url(youtube_url)
     if not song:
-        await msg.edit_text("❌ Error getting audio!")
+        await msg.edit("❌ Error!")
         return
     
-    # Initialize queue if needed
     if chat_id not in queues:
-        queues[chat_id] = []
+        queues[chat_id] = deque()
     
-    # Play or add to queue
-    if chat_id in current_playing:
+    if await call.get_active_call(chat_id):
         queues[chat_id].append(song)
-        await msg.edit_text(f"✅ Added to queue: **{song['title']}**")
+        await msg.edit(f"✅ Added: {song['title']}")
     else:
-        await msg.edit_text("🎵 Playing...")
-        await play_song(chat_id, song)
+        await msg.edit("🎵 Playing...")
+        try:
+            await call.join_group_call(chat_id, AudioPiped(song['url']))
+            await message.reply(f"🎵 Now Playing: {song['title']}")
+        except Exception as e:
+            await msg.edit(f"❌ Error: {e}")
 
 @bot.on_message(filters.command("skip"))
-async def skip_command(client, message: Message):
+async def skip(client, message: Message):
     chat_id = message.chat.id
-    if chat_id in current_playing:
-        await message.reply_text("⏭️ Skipping...")
-        # Leave call
-        try:
-            await call.leave_group_call(chat_id)
-        except:
-            pass
-        # Play next if exists in queue
-        if chat_id in queues and queues[chat_id]:
-            next_song = queues[chat_id].pop(0)
-            await play_song(chat_id, next_song)
-        else:
-            current_playing.pop(chat_id, None)
-    else:
-        await message.reply_text("❌ Nothing is playing!")
+    await message.reply("⏭️ Skipping...")
+    await call.leave_group_call(chat_id)
 
-@bot.on_message(filters.command("stop"))
-async def stop_command(client, message: Message):
-    chat_id = message.chat.id
-    try:
-        await call.leave_group_call(chat_id)
-        if chat_id in queues:
-            queues[chat_id].clear()
-        current_playing.pop(chat_id, None)
-        await message.reply_text("🛑 Stopped")
-    except:
-        await message.reply_text("❌ Error stopping!")
-
-@bot.on_message(filters.command("queue"))
-async def queue_command(client, message: Message):
-    chat_id = message.chat.id
-    
-    text = "📋 **Queue:**\n\n"
-    
-    # Current song
-    if chat_id in current_playing:
-        text += f"🎵 **Now Playing:** {current_playing[chat_id]['title']}\n\n"
-    
-    # Queue
-    if chat_id in queues and queues[chat_id]:
-        text += "**Up Next:**\n"
-        for i, song in enumerate(queues[chat_id][:10], 1):
-            text += f"{i}. {song['title']}\n"
-        if len(queues[chat_id]) > 10:
-            text += f"\n... and {len(queues[chat_id]) - 10} more"
-    else:
-        text += "Queue is empty!"
-    
-    await message.reply_text(text)
-
-# Stream end handler
 @call.on_stream_end()
-async def stream_end_handler(chat_id: int):
-    logger.info(f"Stream ended in {chat_id}")
-    # Play next song if available
-    if chat_id in queues and queues[chat_id]:
-        next_song = queues[chat_id].pop(0)
-        await play_song(chat_id, next_song)
-    else:
-        current_playing.pop(chat_id, None)
+async def stream_end(chat_id: int):
+    logger.info(f"Stream ended: {chat_id}")
 
-# Start the bot
+# Main
 async def main():
-    logger.info("🚀 Starting Music Bot on Railway...")
-    await call.start()
+    await user_client.start()
     await bot.start()
+    await call.start()
     
     me = await bot.get_me()
-    logger.info(f"✅ Bot is ready: @{me.username}")
+    logger.info(f"✅ Bot ready: @{me.username}")
     
-    # Keep running
-    await asyncio.Event().wait()
+    await idle()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("Bot stopped")
+    asyncio.run(main())
