@@ -10,7 +10,7 @@ import requests
 
 # Get from https://my.telegram.org
 API_ID=30776954
-API_HASH=3dfba33f88dfd524b32bbda3e9137000
+
 
 # Get from @BotFather
 BOT_TOKEN=8464370713:AAEB6sOM3pJvBinF09M4vpYuVxrQcM4pFjs
