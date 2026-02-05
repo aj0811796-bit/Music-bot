@@ -1,5 +1,5 @@
+# requirements.txt
 pyrogram==2.0.106
-pytgcalls-pyrogram==0.9.0
+pytgcalls==0.0.24
 yt-dlp==2023.12.30
 youtube-search-python==1.6.5
-aiohttp==3.9.1
