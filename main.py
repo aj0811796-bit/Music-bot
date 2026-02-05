@@ -23,8 +23,8 @@ try:
     from pyrogram.types import Message
     logger.info("✅ Pyrogram imported")
     
-    from py_tgcalls import PyTgCalls
-    from py_tgcalls.types import AudioPiped
+    from py-tgcalls import PyTgCalls
+    from py-tgcalls.types import AudioPiped
     logger.info("✅ py-tgcalls imported")
     
     from youtubesearchpython import VideosSearch
