@@ -1,4 +1,4 @@
 pyrogram
-pytgcalls
+py-tgcalls
 yt-dlp
 youtube-search-python
