@@ -1,21 +1,7 @@
-# Core Telegram
 Pyrogram==2.0.106
-TgCrypto==1.2.5
-
-# Voice calls (choose one based on your bot)
-py-tgcalls==0.9.0  # OR pytgcalls==3.0.0
-
-# Audio/Video processing
-yt-dlp==2023.12.30
+pytgcalls==3.0.0
 youtube-search-python==1.6.5
-
-# Web framework (if needed)
+yt-dlp==2023.12.30
 fastapi==0.104.1
 uvicorn==0.24.0
-
-# Environment
 python-dotenv==1.0.0
-
-# Additional utilities
-aiofiles==23.2.1
-aiohttp==3.9.1
