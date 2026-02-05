@@ -1,7 +1,7 @@
 Pyrogram==2.0.106
-pytgcalls==3.0.0
+pytgcalls==0.0.24
 youtube-search-python==1.6.5
-yt-dlp==2023.12.30
+yt-dlp==2023.10.13
 fastapi==0.104.1
 uvicorn==0.24.0
 python-dotenv==1.0.0
