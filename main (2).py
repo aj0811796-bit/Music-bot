@@ -32,8 +32,14 @@ from pyrogram.enums import ParseMode
 
 # Try to import pytgcalls with fallback
 try:
-    from pytgcalls import PyTgCalls
+    # Use pytgcalls v3.0.0
+from pytgcalls import PyTgCalls
+try:
     from pytgcalls.types import AudioPiped, AudioParameters
+    from pytgcalls.exceptions import GroupCallNotFound, NoActiveGroupCall
+except ImportError:
+    # Fallback for older versions
+    from pytgcalls.types.input_stream import AudioPiped, AudioParameters
     from pytgcalls.exceptions import GroupCallNotFound, NoActiveGroupCall
     logger.info("Using pytgcalls")
 except ImportError:
