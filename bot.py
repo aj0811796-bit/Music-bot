@@ -22,7 +22,32 @@ class TelegramBot:
         
         # Register handlers
         self.register_handlers()
+    class TelegramBot:
+    def __init__(self):
+        self.app = Client(
+            "music_bot",
+            api_id=Config.API_ID,
+            api_hash=Config.API_HASH,
+            bot_token=Config.BOT_TOKEN,
+            plugins=dict(root="plugins"),
+            sleep_threshold=30  # ADD THIS LINE
+        )
+        self.player = MusicPlayer(self.app)
+        
+        # Register handlers
+        self.register_handlers()
     
+    # Add this new method:
+    async def keep_alive(self):
+        """Send periodic updates to prevent timeouts"""
+        import time
+        while True:
+            try:
+                me = await self.app.get_me()
+                logger.info(f"🟢 Bot alive: @{me.username}")
+            except:
+                logger.warning("Keep-alive check failed")
+            await asyncio.sleep(300)  # Check every 5 minutes
     def register_handlers(self):
         @self.app.on_message(filters.command("start") & filters.private)
         async def start_command(client, message: Message):
