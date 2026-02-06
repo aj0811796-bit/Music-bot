@@ -1,4 +1,10 @@
-git+https://github.com/pyrogram/pyrogram.git@v2.0.106
-git+https://github.com/pytgcalls/pytgcalls.git
-yt-dlp
-youtube-search-python
+pyrogram==2.0.106
+pytgcalls==3.1.0
+yt-dlp==2024.4.9
+python-dotenv==1.0.0
+requests==2.31.0
+pillow==10.2.0
+aiofiles==23.2.1
+aiohttp==3.9.3
+pymongo[srv]==4.6.1
+redis==5.0.1
