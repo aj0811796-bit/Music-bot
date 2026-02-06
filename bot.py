@@ -5,6 +5,10 @@ from player import MusicPlayer
 from utils import YouTube, format_duration
 import asyncio
 
+# FIXED IMPORT - Add these 2 lines:
+from pytgcalls import PyTgCalls, StreamType
+from pytgcalls.types import AudioPiped, AudioQuality
+
 class TelegramBot:
     def __init__(self):
         self.app = Client(
