@@ -1,5 +1,8 @@
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, AudioVideoPiped
+# ADD THESE IMPORTS at the top:
+from pytgcalls import PyTgCalls, StreamType
+from pytgcalls.types import AudioPiped, AudioQuality
+# ---------------------------------
+
 from pyrogram.types import Message
 import asyncio
 from typing import Dict, List
@@ -25,7 +28,9 @@ class MusicPlayer:
                 chat_id,
                 AudioPiped(
                     "http://docs.evostream.com/sample_content/assets/sintel1m720p.mp4",
-                )
+                    AudioQuality.HIGH  # ADD THIS
+                ),
+                stream_type=StreamType().local_stream  # CHANGE THIS
             )
             await message.reply("✅ Joined voice chat!")
             return True
@@ -40,8 +45,9 @@ class MusicPlayer:
                 chat_id,
                 AudioPiped(
                     audio_url,
+                    AudioQuality.HIGH  # ADD THIS
                 ),
-                stream_type="music"
+                stream_type=StreamType().local_stream  # CHANGE THIS
             )
             self.current[chat_id] = {'url': audio_url, 'title': title}
             return True
