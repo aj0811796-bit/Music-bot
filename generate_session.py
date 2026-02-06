@@ -3,8 +3,8 @@ from pyrogram import Client
 
 print("=== Telegram Session Generator ===\n")
 
-api_id = input("Enter API ID: ").strip()
-api_hash = input("Enter API Hash: ").strip()
+api_id = input("31963776").strip()
+api_hash = input("d352f599aff861566030a3cbba3a0f75").strip()
 
 print("\n⚠️  Make sure you're logged into your ASSISTANT account (not bot account)")
 print("This will be used for joining voice chats\n")
