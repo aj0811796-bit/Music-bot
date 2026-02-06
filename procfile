@@ -1,0 +1,2 @@
+# Railway Procfile (must be exactly this)
+web: python main.py
