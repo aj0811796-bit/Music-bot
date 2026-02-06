@@ -1,6 +1,6 @@
 # Core dependencies
 pyrogram==2.0.106
-pytgcalls==3.0.0.dev24
+pytgcalls==3.0.0.dev31
 yt-dlp==2024.4.9
 python-dotenv==1.0.0
 
@@ -10,5 +10,5 @@ aiohttp==3.9.3
 aiofiles==23.2.1
 
 # Remove or comment these for Railway (optional)
-# pymongo[srv]==4.6.1  # Only if you need MongoDB
+ pymongo[srv]==4.6.1  # Only if you need MongoDB
 # redis==5.0.1         # Only if you need Redis
